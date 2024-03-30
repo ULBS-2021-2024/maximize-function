@@ -1,6 +1,7 @@
 import random
 from constants import *
 from statistics import mean
+from manim_utils import *
 
 
 def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_rate):
@@ -208,9 +209,25 @@ def run_genetic_algorithm(
         sorted_population_based_on_fitness = sort_population(
             encoded_population, decoded_population, fitness, probability, actual_count
         )
+        decoded_values_for_animation = []
+        fitness_values_for_animation = []
+        for i in range(len(sorted_population_based_on_fitness)):
+            decoded_values_for_animation.append(
+                sorted_population_based_on_fitness[i][1]
+            )
+            fitness_values_for_animation.append(
+                sorted_population_based_on_fitness[i][2]
+            )
+
+        add_generation_data(
+            decoded_values_for_animation,
+            fitness_values_for_animation,
+            generation + 1,
+        )
 
         best_solution = sorted_population_based_on_fitness[0]
         if best_solution[2] >= value_threshold:
+            generate_animation()
             print("A value above the threshold was found!")
             return best_solution
 
