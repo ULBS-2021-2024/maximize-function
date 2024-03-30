@@ -51,7 +51,7 @@ def do_crossover(
 
     i = 0
     j = 1
-
+    # print(population_copy)
     while j < len(sorted_population):
         first_descendant, second_descendant = create_offspring(
             population_copy,
@@ -183,6 +183,8 @@ def run_genetic_algorithm(
         number_of_bits,
     )
 
+    previous_best_solution = 0
+
     for generation in range(generations):
         # print(encoded_population)
         decoded_population = []
@@ -198,10 +200,11 @@ def run_genetic_algorithm(
         # print(fitness)
         probability = compute_probability_of_selection(fitness)
         # print(probability)
-        expected_count = compute_expected_count(fitness)
+        # expected_count = compute_expected_count(fitness)
         # print(expected_count)
         actual_count = compute_actual_count(probability)
         # print(actual_count)
+
         filter_based_on_actual_count(
             encoded_population, decoded_population, fitness, probability, actual_count
         )
@@ -209,9 +212,13 @@ def run_genetic_algorithm(
         sorted_population_based_on_fitness = sort_population(
             encoded_population, decoded_population, fitness, probability, actual_count
         )
+
         decoded_values_for_animation = []
         fitness_values_for_animation = []
+
         for i in range(len(sorted_population_based_on_fitness)):
+            # print(sorted_population_based_on_fitness[i][2])
+            # print(sorted_population_based_on_fitness[i][1])
             decoded_values_for_animation.append(
                 sorted_population_based_on_fitness[i][1]
             )
@@ -226,7 +233,9 @@ def run_genetic_algorithm(
         )
 
         best_solution = sorted_population_based_on_fitness[0]
+        # print(best_solution[2])
         if best_solution[2] >= value_threshold:
+            previous_best_solution = best_solution[2]
             generate_animation()
             print("A value above the threshold was found!")
             return best_solution
