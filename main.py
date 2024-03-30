@@ -17,7 +17,7 @@ def do_mutation(descendants):
                 + encoded_value[mutation_index + 1 :]
             )
             decoded = binary_decode(
-                encoded_value, INTERVAL["LEFT_MARGIN"], INTERVAL["RIGHT_MARGIN"]
+                encoded_value, FUNCTION_DOMAIN["MIN"], FUNCTION_DOMAIN["MAX"]
             )
             fitness = evaluate_function(decoded)
             mutated_descendants.append(tuple((encoded_value, decoded, fitness)))
@@ -30,24 +30,24 @@ def create_offspring(copy, i, j):
     crossover_point = random.randint(1, NUMBER_OF_BITS)
     offspring1 = copy[i][0][:crossover_point] + copy[j][0][crossover_point:]
     offspring2 = copy[j][0][:crossover_point] + copy[i][0][crossover_point:]
-    dv1 = binary_decode(offspring1, INTERVAL["LEFT_MARGIN"], INTERVAL["RIGHT_MARGIN"])
-    dv2 = binary_decode(offspring2, INTERVAL["LEFT_MARGIN"], INTERVAL["RIGHT_MARGIN"])
-    fitness1 = evaluate_function(dv1)
-    fitness2 = evaluate_function(dv2)
+    dv1 = binary_decode(offspring1, FUNCTION_DOMAIN["MIN"], FUNCTION_DOMAIN["MAX"])
+    dv2 = binary_decode(offspring2, FUNCTION_DOMAIN["MIN"], FUNCTION_DOMAIN["MAX"])
+    fitness1 = compute_fitness(dv1)
+    fitness2 = compute_fitness(dv2)
     child1 = tuple((offspring1, dv1, fitness1))
     child2 = tuple((offspring2, dv2, fitness2))
     return child1, child2
 
 
-def do_crossover(sorted_fitness):
-    copy = sorted_fitness
+def do_crossover(sorted_population):
+    copy = sorted_population
     descendants = []
     i = 0
     j = 1
-    while j != len(sorted_fitness):
-        d1, d2 = create_offspring(copy, i, j)
-        descendants.append(d1)
-        descendants.append(d2)
+    while j != len(sorted_population):
+        first_descendant, second_descendant = create_offspring(copy, i, j)
+        descendants.append(first_descendant)
+        descendants.append(second_descendant)
 
         copied_pair_list_1 = list(copy[i])  # Convert the pair to a list to modify it
         copied_pair_list_2 = list(copy[j])
@@ -68,12 +68,12 @@ def do_crossover(sorted_fitness):
     return descendants
 
 
-def sort_fitness(encoded_values, decoded_values, fitness, probability, actual_count):
+def sort_population(encoded_values, decoded_values, fitness, probability, actual_count):
     pairs = list(
         zip(encoded_values, decoded_values, fitness, probability, actual_count)
     )
-    sorted_fitness = sorted(pairs, key=lambda pair: pair[2], reverse=True)
-    return sorted_fitness
+    sorted_population = sorted(pairs, key=lambda pair: pair[2], reverse=True)
+    return sorted_population
 
 
 def filter_based_on_actual_count(
@@ -122,20 +122,20 @@ def compute_probability_of_selection(fitness):
     return probability
 
 
-def evaluate_function(x):
+def compute_fitness(x):
     return 4 * x**4 + 3 * x**3 + 2 * x**2 + x + 1
 
 
-def compute_fitness(values):
+def compute_fitness_for_population(arguments):
     fitness = []
-    for i in range(len(values)):
-        fitness.append(evaluate_function(values[i]))
+    for i in range(len(arguments)):
+        fitness.append(compute_fitness(arguments[i]))
     return fitness
 
 
-def binary_decode(binary_string, a, b):
-    decoded_number = int(binary_string, 2)
-    decoded_number = decoded_number / (2**NUMBER_OF_BITS - 1) * (b - a) + a
+def binary_decode(encoded_string, a, b, number_of_bits):
+    decoded_number = int(encoded_string, 2)
+    decoded_number = decoded_number / (2**number_of_bits - 1) * (b - a) + a
     return decoded_number
 
 
@@ -145,46 +145,78 @@ def binary_encode(x, a, b):
 
 
 def select_initial_population(a, b, N):
-    initial_population = []
+    population = []
     for i in range(N):
-        initial_population.append(binary_encode(random.uniform(a, b), a, b))
-    return initial_population
+        population.append(binary_encode(random.uniform(a, b), a, b))
+    return population
+
+
+def run_genetic_algorithm(
+    initial_population_size,
+    generations,
+    domain_min,
+    domain_max,
+    number_of_bits,
+    mutation_rate,
+    value_threshold,
+):
+    encoded_population = select_initial_population(
+        domain_min,
+        domain_max,
+        INITIAL_POPULATION_SIZE,
+    )
+
+    for generation in range(generations):
+        # print(encoded_population)
+        decoded_population = []
+        for i in range(INITIAL_POPULATION_SIZE):
+            decoded_population.append(
+                binary_decode(
+                    encoded_population[i], domain_min, domain_max, number_of_bits
+                )
+            )
+        # print(decoded_population)
+        fitness = compute_fitness_for_population(decoded_population)
+        # print(fitness)
+        probability = compute_probability_of_selection(fitness)
+        # print(probability)
+        expected_count = compute_expected_count(fitness)
+        # print(expected_count)
+        actual_count = compute_actual_count(fitness, probability)
+        # print(actual_count)
+        filter_based_on_actual_count(
+            encoded_population, decoded_population, fitness, probability, actual_count
+        )
+
+        sorted_population_based_on_fitness = sort_population(
+            encoded_population, decoded_population, fitness, probability, actual_count
+        )
+
+        best_solution = sorted_population_based_on_fitness[0]
+        if best_solution[3] >= value_threshold:
+            return best_solution
+
+        # print(sorted_population_based_on_fitness)
+        # crossover
+        descendants = do_crossover(sorted_population_based_on_fitness)
+        # print(descendants)
+        next_population = do_mutation(descendants)
+
+        print("da")
+        print(next_population)
+        encoded_population = next_population
 
 
 def main():
-    initial_population = select_initial_population(
-        INTERVAL["LEFT_MARGIN"], INTERVAL["RIGHT_MARGIN"], INITIAL_POPULATION_SIZE
+    run_genetic_algorithm(
+        INITIAL_POPULATION_SIZE,
+        NUMBER_OF_GENERATIONS,
+        FUNCTION_DOMAIN["MIN"],
+        FUNCTION_DOMAIN["MAX"],
+        NUMBER_OF_BITS,
+        MUTATION_RATE,
+        VALUE_THRESHOLD,
     )
-    # print(initial_population)
-    decoded_values = []
-    for i in range(INITIAL_POPULATION_SIZE):
-        decoded_values.append(
-            binary_decode(
-                initial_population[i], INTERVAL["LEFT_MARGIN"], INTERVAL["RIGHT_MARGIN"]
-            )
-        )
-    # print(decoded_values)
-    fitness = compute_fitness(decoded_values)
-    # print(fitness)
-    probability = compute_probability_of_selection(fitness)
-    # print(probability)
-    expected_count = compute_expected_count(fitness)
-    # print(expected_count)
-    actual_count = compute_actual_count(fitness, probability)
-    # print(actual_count)
-    filter_based_on_actual_count(
-        initial_population, decoded_values, fitness, probability, actual_count
-    )
-
-    sorted_fitness = sort_fitness(
-        initial_population, decoded_values, fitness, probability, actual_count
-    )
-
-    # crossover
-    descendants = do_crossover(sorted_fitness)
-    # print(descendants)
-    next_population = do_mutation(descendants)
-    print(next_population)
 
 
 main()
