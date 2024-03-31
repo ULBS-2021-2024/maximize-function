@@ -12,7 +12,7 @@ class GenerationsAnimation(Scene):
     def construct(self):
         rows = []
         row_labels = []
-        print(self.data)
+
         for i in range(len(self.data)):
             generation_data = self.data[i]
             generation_fitness_sum = sum(generation_data[1])
