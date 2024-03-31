@@ -32,8 +32,8 @@ class GenerationsAnimation(Scene):
             rows,
             col_labels=[Text("Sum"), Text("Average"), Text("Maximum")],
         )
-        table.set_width(config.frame_width / 2)
-        table.set_height(config.frame_height / 2)
+        table.set_width(config.frame_width / 3)
+        table.set_height(config.frame_height / 3)
         self.play(Write(table))
         self.wait(2)
 
