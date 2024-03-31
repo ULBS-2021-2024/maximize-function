@@ -251,13 +251,131 @@ participate in the crossover cycle using Roulette wheel selection
 
 </details>
 
+7. Crossover operation is performed to produce new offspring (children).
+   
+<details>
+<summary>Code Snippet</summary>
 
-7. Now, writing the mating pool based upon the actual count as shown in
-8. Crossover operation is performed to produce new offspring (children).
-9. After crossover operations, new off springs are produced and ‘x’ values are
-decodes and fitness is calculated.
-10.  In this step, mutation operation is performed to produce new off springs
-after crossover operation. As discussed in Sect. 3.10.3.1 mutation-flipping operation is performed and new off springs are produced. Table 3.3 shows the new offspring after mutation.
+```python
+def create_offspring(
+    population,
+    first_parent_index,
+    second_parent_index,
+    number_of_bits,
+):
+    crossover_point = random.randint(1, number_of_bits - 1)
+    first_offspring = (
+        population[first_parent_index][0][:crossover_point]
+        + population[second_parent_index][0][crossover_point:]
+    )
+
+    second_offspring = (
+        population[second_parent_index][0][:crossover_point]
+        + population[first_parent_index][0][crossover_point:]
+    )
+
+    return first_offspring, second_offspring
+
+
+def do_crossover(
+    sorted_population,
+    number_of_bits,
+):
+    population_copy = sorted_population
+    descendants = []
+
+    i = 0
+    j = 1
+    # print(population_copy)
+    while j < len(sorted_population):
+        first_descendant, second_descendant = create_offspring(
+            population_copy,
+            i,
+            j,
+            number_of_bits,
+        )
+        descendants.append(first_descendant)
+        descendants.append(second_descendant)
+
+        first_parent = list(population_copy[i])
+        second_parent = list(population_copy[j])
+
+        first_parent[4] = first_parent[4] - 1  # decrease actual count
+        second_parent[4] = second_parent[4] - 1  # decrease actual count
+
+        population_copy[i] = tuple(first_parent)
+        population_copy[j] = tuple(second_parent)
+
+        if population_copy[i][4] == 0:
+            if population_copy[j][4] == 0:
+                i = i + 2
+                j = j + 2
+            else:
+                i = i + 1
+                j = j + 1
+        else:
+            if population_copy[j][4] == 0:
+                j = j + 1
+    return descendants
+```
+
+</details>
+
+
+8.   Based on a mutation probability (which in my case is the default 0.01), mutations are introduced into the chromosomes offspring at randomly chosen positions
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_rate):
+    mutated_descendants = []
+
+    for i in range(len(descendants)):
+        if random.random() < mutation_rate:
+            mutation_index = random.randint(0, number_of_bits - 1)
+            encoded_value = descendants[i]
+            mutated_value = (
+                encoded_value[:mutation_index]
+                + ("1" if encoded_value[mutation_index] == "0" else "0")
+                + encoded_value[mutation_index + 1 :]
+            )
+            mutated_descendants.append(mutated_value)
+        else:
+            mutated_descendants.append(descendants[i])
+    return mutated_descendants
+
+```
+
+<details>
+
+9.   The mutated descendants become the new population and the cycle is repeated until the maximum fitness is larger than a specific threshold. If that doesn't happen, the final result will be the last generation.
+
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_rate):
+    mutated_descendants = []
+
+    for i in range(len(descendants)):
+        if random.random() < mutation_rate:
+            mutation_index = random.randint(0, number_of_bits - 1)
+            encoded_value = descendants[i]
+            mutated_value = (
+                encoded_value[:mutation_index]
+                + ("1" if encoded_value[mutation_index] == "0" else "0")
+                + encoded_value[mutation_index + 1 :]
+            )
+            mutated_descendants.append(mutated_value)
+        else:
+            mutated_descendants.append(descendants[i])
+    return mutated_descendants
+
+```
+
+<details>
 
 ## Tests
 
