@@ -16,6 +16,8 @@ Through these genetic operations, the algorithm introduces variations and explor
 ## Technologies used
 
 * Python: Python was chosen as the primary programming language for this project due to its ease of use, extensive libraries, and fast development workflow. Python's simplicity and readability make it an ideal choice for implementing complex algorithms like genetic algorithms. Additionally, the vast ecosystem of libraries in Python provides powerful tools for numerical computation, data visualization, and algorithmic optimization, facilitating efficient implementation and experimentation.
+  
+* Tkinter & Custom Tkinter: For the user interface, I used Tkinter (no so much) and Custom Thinker. While Tkinter provides a solid foundation for creating graphical user interfaces in Python, customizing its appearance and behavior to align with specific project requirements can be time-consuming and labor-intensive. By leveraging custom Tkinter themes and components, I was able to streamline the development process and achieve a visually appealing interface that enhances user engagement.
 
 * Manim: Manim (Mathematical Animation Engine) is a powerful Python library for creating animations, particularly suited for mathematical and scientific visualization. The decision to incorporate Manim into the project was driven by the desire to visualize the genetic algorithm's operations and results in a clear and engaging manner. By leveraging Manim's capabilities, the project aims to provide visual insights into how the genetic algorithm progresses through generations, how candidate solutions evolve, and how the fitness landscape changes over time.
 
@@ -30,9 +32,153 @@ Through these genetic operations, the algorithm introduces variations and explor
 ## Project structure
 
 For managing the python packages I used a virtual environment which is added to .gitignore.
+The project's entry point is the user_interface.py file which opens a small window designed using Custom Thinker. 
 
-The entry point of the application is the main function in the "main.py" file.
-Here we run the genetic algorithm loop which is based on the configurations declared in the "constants.py" file
+<details>
+<summary>Code Snippet</summary>
+
+```python
+import tkinter as tk
+from customtkinter import (
+    CTk,
+    CTkButton,
+    CTkEntry,
+    CTkLabel,
+    set_appearance_mode,
+    set_default_color_theme,
+)
+
+from main import *
+from constants import *
+
+set_appearance_mode("System")
+set_default_color_theme("green")
+
+
+class App(CTk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.title("Configuration")
+        self.geometry("500x400")
+
+        self.title_label = CTkLabel(
+            self, text="Configuration", font=("Helvetica", 16, "bold")
+        )
+        self.title_label.grid(row=0, column=0, columnspan=4, pady=(10, 20))
+
+        self.initial_population_size_label = CTkLabel(
+            self, text="Initial population size:"
+        )
+        self.initial_population_size_label.grid(row=1, column=0, padx=5, pady=5)
+        self.initial_population_size_input = CTkEntry(self, width=100)
+        self.initial_population_size_input.grid(row=1, column=1, padx=5, pady=5)
+        self.initial_population_size_input.insert(0, str(INITIAL_POPULATION_SIZE))
+
+        self.number_of_generations_label = CTkLabel(self, text="Number of generations:")
+        self.number_of_generations_label.grid(row=2, column=0, padx=5, pady=5)
+        self.number_of_generations_input = CTkEntry(self, width=100)
+        self.number_of_generations_input.grid(row=2, column=1, padx=5, pady=5)
+        self.number_of_generations_input.insert(0, str(NUMBER_OF_GENERATIONS))
+
+        self.number_of_bits_label = CTkLabel(self, text="Number of bits:")
+        self.number_of_bits_label.grid(row=3, column=0, padx=5, pady=5)
+        self.number_of_bits_input = CTkEntry(self, width=100)
+        self.number_of_bits_input.grid(row=3, column=1, padx=5, pady=5)
+        self.number_of_bits_input.insert(0, str(NUMBER_OF_BITS))
+
+        self.value_threshold_label = CTkLabel(self, text="Value threshold:")
+        self.value_threshold_label.grid(row=4, column=0, padx=5, pady=5)
+        self.value_threshold_input = CTkEntry(self, width=100)
+        self.value_threshold_input.grid(row=4, column=1, padx=5, pady=5)
+        self.value_threshold_input.insert(0, str(VALUE_THRESHOLD))
+
+        self.domain_min_label = CTkLabel(self, text="Domain min:")
+        self.domain_min_label.grid(row=1, column=2, padx=5, pady=5)
+        self.domain_min_slider = tk.Scale(
+            self, from_=-500, to=450, resolution=0.1, orient=tk.HORIZONTAL
+        )
+        self.domain_min_slider.set(FUNCTION_DOMAIN["MIN"])
+        self.domain_min_slider.grid(row=1, column=3, padx=5, pady=5)
+
+        self.domain_max_label = CTkLabel(self, text="Domain max:")
+        self.domain_max_label.grid(row=2, column=2, padx=5, pady=5)
+        self.domain_max_slider = tk.Scale(
+            self, from_=-450, to=500, resolution=0.1, orient=tk.HORIZONTAL
+        )
+        self.domain_max_slider.set(FUNCTION_DOMAIN["MAX"])
+        self.domain_max_slider.grid(row=2, column=3, padx=5, pady=5)
+
+        self.crossover_rate_label = CTkLabel(self, text="Crossover rate:")
+        self.crossover_rate_label.grid(row=3, column=2, padx=5, pady=5)
+        self.crossover_rate_slider = tk.Scale(
+            self, from_=0, to=1, resolution=0.0001, orient=tk.HORIZONTAL
+        )
+        self.crossover_rate_slider.set(CROSSOVER_RATE)
+        self.crossover_rate_slider.grid(row=3, column=3, padx=5, pady=5)
+
+        self.mutation_rate_label = CTkLabel(self, text="Mutation rate:")
+        self.mutation_rate_label.grid(row=4, column=2, padx=5, pady=5)
+        self.mutation_rate_slider = tk.Scale(
+            self, from_=0, to=1, resolution=0.0001, orient=tk.HORIZONTAL
+        )
+        self.mutation_rate_slider.set(MUTATION_RATE)
+        self.mutation_rate_slider.grid(row=4, column=3, padx=5, pady=5)
+
+        self.button = CTkButton(self, text="RUN", command=self.on_button_click)
+        self.button.grid(row=5, column=0, columnspan=4, pady=10)
+
+    def on_button_click(self):
+        text_input_values = [
+            self.initial_population_size_input.get(),
+            self.number_of_generations_input.get(),
+            self.number_of_bits_input.get(),
+            self.value_threshold_input.get(),
+        ]
+
+        slider_values = [
+            self.domain_min_slider.get(),
+            self.domain_max_slider.get(),
+            self.crossover_rate_slider.get(),
+            self.mutation_rate_slider.get(),
+        ]
+
+        with open("logs/logs.txt", "w") as f:
+            pass
+
+        result = run_genetic_algorithm(
+            int(text_input_values[0]),
+            int(text_input_values[1]),
+            slider_values[0],
+            slider_values[1],
+            int(text_input_values[2]),
+            slider_values[2],
+            slider_values[3],
+            float(text_input_values[3]),
+        )
+
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
+
+```
+
+</details>
+
+
+Here the user has the possibility to configure the algorithm's input values. The default values are extracted from the "constants.py" file.
+
+<details>
+<summary>User interface</summary>
+
+![User interface](assets/images/user-interface.png)
+
+</details>
+
+The algorithm's steps data output is written in the "logs.txt" file from the logs folder.
+
+The algorithm can also be run from the command line by running the main.py file.
 
 <details>
 <summary>Code Snippet</summary>
@@ -53,9 +199,10 @@ def main():
 
 main()
 ```
+
 </details>
 
-The "manim_utils.py" file is used to take the data by generation and send it to the animation class when the solution is found.
+The "manim_utils.py" file is used to take the data by generation and send it to the animation class when the solution is found, if there is one.
 
 <details>
 <summary>Code Snippet</summary>
@@ -96,7 +243,7 @@ class GenerationsAnimation(Scene):
     def construct(self):
         rows = []
         row_labels = []
-        print(self.data)
+
         for i in range(len(self.data)):
             generation_data = self.data[i]
             generation_fitness_sum = sum(generation_data[1])
@@ -105,6 +252,7 @@ class GenerationsAnimation(Scene):
             generation_maximum_y = generation_data[1][0]
             rows.append(
                 [
+                    str(i + 1),
                     str(generation_fitness_sum),
                     str(generation_fitness_average),
                     str(generation_maximum_y),
@@ -114,10 +262,16 @@ class GenerationsAnimation(Scene):
 
         table = Table(
             rows,
-            col_labels=[Text("Sum"), Text("Average"), Text("Maximum")],
-        )
-        table.set_width(config.frame_width / 3)
-        table.set_height(config.frame_height / 3)
+            col_labels=[
+                Text("Generation"),
+                Text("Sum"),
+                Text("Average"),
+                Text("Maximum"),
+            ],
+            include_outer_lines=True,
+        ).set_column_colors(RED, GREEN, PURPLE, BLUE)
+        table = table.scale(0.5)
+        self.play(Write(Tex("Fitness Statistics by Generation").to_edge(edge=UP)))
         self.play(Write(table))
         self.wait(2)
 
@@ -389,16 +543,15 @@ NUMBER_OF_BITS = 5
 CROSSOVER_RATE = 0.7
 MUTATION_RATE = 0.01
 VALUE_THRESHOLD = 6424080201
-
 ```
 
 <details>
- <summary>Result</summary>
-	<video controls src="tests/test1.mp4" title="Title"></video>
+<summary>Data</summary>
+	<video controls src="tests/test-1.mp4" title="Title"></video>
 </details>
 
 
-2. 
+1. 
 
 ```python
 INITIAL_POPULATION_SIZE = 4
@@ -408,12 +561,11 @@ NUMBER_OF_BITS = 5
 CROSSOVER_RATE = 0.7
 MUTATION_RATE = 0.01
 VALUE_THRESHOLD = 35000
-
 ```
 
 <details>
- <summary>Result</summary>
-	<video controls src="tests/test2.mp4" title="Title"></video>
+ <summary>Data</summary>
+	<video controls src="tests/test-2.mp4" title="Title"></video>
 </details>
 
 
@@ -421,18 +573,33 @@ VALUE_THRESHOLD = 35000
 
 ```python
 INITIAL_POPULATION_SIZE = 4
-NUMBER_OF_GENERATIONS = 10
+NUMBER_OF_GENERATIONS = 3
 FUNCTION_DOMAIN = {"MIN": -10, "MAX": 11}
 NUMBER_OF_BITS = 5
 CROSSOVER_RATE = 0.7
 MUTATION_RATE = 0.01
-VALUE_THRESHOLD = 35000
+VALUE_THRESHOLD = 350000
 ```
 
 <details>
- <summary>Result</summary>
-	Could not reach the threshold value! Try other configurations! Here are the final fitness values: 
-	[1511.075770881226]
+<summary>Result</summary>
+
+```txt
+Generation:  1
+Encoded population:  ['00000', '01000', '10000', '11100']
+Decoded population:  [-10.0, -4.580645161290323, 0.8387096774193541, 8.967741935483872]
+Sorted population based on fitness:  [('00000', -10.0, 37191.0, 0.5558095566882887, 3), ('11100', 8.967741935483872, 28204.13658920589, 0.4215032845156749, 5)]
+Generation:  2
+Encoded population:  ['00000', '11100', '00000', '11100', '00100', '11000']
+Decoded population:  [-10.0, 8.967741935483872, -10.0, 8.967741935483872, -7.290322580645162, 6.258064516129032]
+Sorted population based on fitness:  [('00000', -10.0, 37191.0, 0.25131945914054915, 2), ('00000', -10.0, 37191.0, 0.25131945914054915, 3), ('11100', 8.967741935483872, 28204.13658920589, 0.19059042115365, 4), ('11100', 8.967741935483872, 28204.13658920589, 0.19059042115365, 1), ('00100', -7.290322580645162, 10236.7727025157, 0.06917534293084304, 2)]
+Generation:  3
+Encoded population:  ['00000', '00000', '00000', '00000', '01100', '10000', '11100', '11100', '11100', '00100', '11100', '00100']
+Decoded population:  [-10.0, -10.0, -10.0, -10.0, -1.870967741935484, 0.8387096774193541, 8.967741935483872, 8.967741935483872, 8.967741935483872, -7.290322580645162, 8.967741935483872, -7.290322580645162]
+Sorted population based on fitness:  [('00000', -10.0, 37191.0, 0.13183782515306292, 4), ('00000', -10.0, 37191.0, 0.13183782515306292, 3), ('00000', -10.0, 37191.0, 0.13183782515306292, 2), ('00000', -10.0, 37191.0, 0.13183782515306292, 1), ('11100', 8.967741935483872, 28204.13658920589, 0.09998042613107552, 2), ('11100', 8.967741935483872, 28204.13658920589, 0.09998042613107552, 3), ('11100', 8.967741935483872, 28204.13658920589, 0.09998042613107552, 3), ('11100', 8.967741935483872, 28204.13658920589, 0.09998042613107552, 3), ('00100', -7.290322580645162, 10236.7727025157, 0.036288183960794605, 2), ('00100', -7.290322580645162, 10236.7727025157, 0.036288183960794605, 1)]
+Could not reach the threshold value! Try other configurations! Here are the final fitness values: 
+```
+
 </details>
 
 # Bibliography
