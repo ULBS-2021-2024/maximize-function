@@ -133,17 +133,130 @@ def play_animation(data):
 The algorithm is implemented in 10 steps:
 
 1. Select a random initial population from the function chosen domain, encoded in binary, into a finite length string
-2. Obtain the decoded x values for the initial population generated. 
-3. Calculate the fitness or objective function.
-4. Compute the probability of selection,
-5. The next step is to calculate the expected count, which is calculated as,
-6. Now the actual count is to be obtained to select the individuals, which would
-participate in the crossover cycle using Roulette wheel selection. The Roulette wheel is formed as shown in Fig. 3.24.
+   
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def select_initial_population(size, a, b, number_of_bits):
+    population = []
+    for i in range(size):
+        population.append(binary_encode(random.uniform(a, b), a, b, number_of_bits))
+    return population
+```
+
+</details>
+
+
+2. Decoded the values for population generated
+   
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def binary_decode(encoded_string, a, b, number_of_bits):
+    decoded_number = int(encoded_string, 2)
+    decoded_number = decoded_number / (2**number_of_bits - 1) * (b - a) + a
+    return decoded_number
+```
+
+</details>
+
+
+3. Calculate the fitness for the decoded values
+   
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def compute_fitness(x):
+    return 4 * x**4 + 3 * x**3 + 2 * x**2 + x + 1
+
+def compute_fitness_for_population(arguments):
+    fitness = []
+    for i in range(len(arguments)):
+        fitness.append(compute_fitness(arguments[i]))
+    return fitness
+```
+
+</details>
+
+4. Compute the probability of selection for the population
+
+   This is calculated using the following formula: 
+   
+   $P_i$ = $\frac{f(x)_i}{\sum_{k=1}^{n}f(x)_k}$
+
+   Where  $f(x)_i$ is the fitness of the member i of the population
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def compute_probability_of_selection(fitness):
+    fitness_sum = sum(fitness)
+    probability = []
+    for i in range(len(fitness)):
+        probability.append(fitness[i] / fitness_sum)
+    return probability
+
+```
+
+</details>
+
+5. Calculate the expected count
+
+   The expected count provides insight into which population may be chosen for additional consideration in the mating pool. We calculate it using the following formula:
+   
+   $E_i$ = $\frac{f(x)_i}{\frac{\sum_{k=1}^{n}f(x)_k}{n}}$
+   i.e. Expected count = $\frac{Fitness}{\text{Fitness Average}}$
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def compute_expected_count(fitness):
+    average_fitness = mean(fitness)
+    expected_count = []
+    for i in range(len(fitness)):
+        expected_count.append(fitness[i] / average_fitness)
+    return expected_count
+
+```
+
+</details>
+
+6. Compute the actual count used for selecting the individuals which would
+participate in the crossover cycle using Roulette wheel selection
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+    actual_count = [0] * len(probability)
+    number_of_spins = INITIAL_POPULATION_SIZE * 2
+
+    for _ in range(number_of_spins):
+        spin_result = random.random()
+        cumulative_prob = 0
+        for i, prob in enumerate(probability):
+            cumulative_prob += prob
+            if spin_result <= cumulative_prob:
+                actual_count[i] += 1
+                break
+    return actual_count
+
+```
+
+</details>
+
+
 7. Now, writing the mating pool based upon the actual count as shown in
 8. Crossover operation is performed to produce new offspring (children).
 9. After crossover operations, new off springs are produced and ‘x’ values are
 decodes and fitness is calculated.
-10. In this step, mutation operation is performed to produce new off springs
+10.  In this step, mutation operation is performed to produce new off springs
 after crossover operation. As discussed in Sect. 3.10.3.1 mutation-flipping operation is performed and new off springs are produced. Table 3.3 shows the new offspring after mutation.
 
 ## Tests
