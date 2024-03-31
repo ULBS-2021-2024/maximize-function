@@ -4,7 +4,7 @@ from statistics import mean
 from manim_utils import *
 
 
-def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_rate):
+def do_mutation(descendants, number_of_bits, mutation_rate):
     mutated_descendants = []
 
     for i in range(len(descendants)):
@@ -44,6 +44,7 @@ def create_offspring(
 
 def do_crossover(
     sorted_population,
+    crossover_rate,
     number_of_bits,
 ):
     population_copy = sorted_population
@@ -51,25 +52,29 @@ def do_crossover(
 
     i = 0
     j = 1
-    # print(population_copy)
-    while j < len(sorted_population):
-        first_descendant, second_descendant = create_offspring(
-            population_copy,
-            i,
-            j,
-            number_of_bits,
-        )
-        descendants.append(first_descendant)
-        descendants.append(second_descendant)
 
+    while j < len(sorted_population):
         first_parent = list(population_copy[i])
         second_parent = list(population_copy[j])
 
-        first_parent[4] = first_parent[4] - 1  # decrease actual count
-        second_parent[4] = second_parent[4] - 1  # decrease actual count
+        first_parent[4] = first_parent[4] - 1
+        second_parent[4] = second_parent[4] - 1
 
         population_copy[i] = tuple(first_parent)
         population_copy[j] = tuple(second_parent)
+
+        if random.random() < crossover_rate:
+            first_descendant, second_descendant = create_offspring(
+                population_copy,
+                i,
+                j,
+                number_of_bits,
+            )
+            descendants.append(first_descendant)
+            descendants.append(second_descendant)
+        else:
+            descendants.append(population_copy[i][0])
+            descendants.append(population_copy[j][0])
 
         if population_copy[i][4] == 0:
             if population_copy[j][4] == 0:
@@ -81,6 +86,7 @@ def do_crossover(
         else:
             if population_copy[j][4] == 0:
                 j = j + 1
+
     return descendants
 
 
@@ -107,9 +113,9 @@ def filter_based_on_actual_count(
             i = i + 1
 
 
-def compute_actual_count(probability):
+def compute_actual_count(probability, population_size):
     actual_count = [0] * len(probability)
-    number_of_spins = INITIAL_POPULATION_SIZE * 2
+    number_of_spins = population_size * 2
 
     for _ in range(number_of_spins):
         spin_result = random.random()
@@ -173,6 +179,7 @@ def run_genetic_algorithm(
     domain_min,
     domain_max,
     number_of_bits,
+    crossover_rate,
     mutation_rate,
     value_threshold,
 ):
@@ -183,77 +190,84 @@ def run_genetic_algorithm(
         number_of_bits,
     )
 
-    previous_best_solution = 0
-
     for generation in range(generations):
-        # print(encoded_population)
-        decoded_population = []
-        for i in range(len(encoded_population)):
-            decoded_population.append(
-                binary_decode(
-                    encoded_population[i], domain_min, domain_max, number_of_bits
+        if len(encoded_population) > 1:
+            decoded_population = []
+            for i in range(len(encoded_population)):
+                decoded_population.append(
+                    binary_decode(
+                        encoded_population[i], domain_min, domain_max, number_of_bits
+                    )
                 )
+
+            fitness = compute_fitness_for_population(decoded_population)
+
+            probability = compute_probability_of_selection(fitness)
+
+            expected_count = compute_expected_count(fitness)
+
+            actual_count = compute_actual_count(probability, len(encoded_population))
+
+            filter_based_on_actual_count(
+                encoded_population,
+                decoded_population,
+                fitness,
+                probability,
+                actual_count,
             )
 
-        # print(decoded_population)
-        fitness = compute_fitness_for_population(decoded_population)
-        # print(fitness)
-        probability = compute_probability_of_selection(fitness)
-        # print(probability)
-        # expected_count = compute_expected_count(fitness)
-        # print(expected_count)
-        actual_count = compute_actual_count(probability)
-        # print(actual_count)
-
-        filter_based_on_actual_count(
-            encoded_population, decoded_population, fitness, probability, actual_count
-        )
-
-        sorted_population_based_on_fitness = sort_population(
-            encoded_population, decoded_population, fitness, probability, actual_count
-        )
-
-        decoded_values_for_animation = []
-        fitness_values_for_animation = []
-
-        for i in range(len(sorted_population_based_on_fitness)):
-            # print(sorted_population_based_on_fitness[i][2])
-            # print(sorted_population_based_on_fitness[i][1])
-            decoded_values_for_animation.append(
-                sorted_population_based_on_fitness[i][1]
-            )
-            fitness_values_for_animation.append(
-                sorted_population_based_on_fitness[i][2]
+            sorted_population_based_on_fitness = sort_population(
+                encoded_population,
+                decoded_population,
+                fitness,
+                probability,
+                actual_count,
             )
 
-        add_generation_data(
-            decoded_values_for_animation,
-            fitness_values_for_animation,
-            generation + 1,
-        )
+            decoded_values_for_animation = []
+            fitness_values_for_animation = []
 
-        best_solution = sorted_population_based_on_fitness[0]
-        # print(best_solution[2])
-        if best_solution[2] >= value_threshold:
-            previous_best_solution = best_solution[2]
-            generate_animation()
-            print("A value above the threshold was found!")
-            return best_solution
+            for i in range(len(sorted_population_based_on_fitness)):
+                decoded_values_for_animation.append(
+                    sorted_population_based_on_fitness[i][1]
+                )
+                fitness_values_for_animation.append(
+                    sorted_population_based_on_fitness[i][2]
+                )
 
-        # print(sorted_population_based_on_fitness)
-        # crossover
-        descendants = do_crossover(
-            sorted_population_based_on_fitness,
-            number_of_bits,
-        )
-        # print(descendants)
-        next_population = do_mutation(
-            descendants, domain_min, domain_max, number_of_bits, mutation_rate
-        )
+            add_generation_data(
+                decoded_values_for_animation,
+                fitness_values_for_animation,
+                generation + 1,
+            )
 
-        # print(next_population)
-        encoded_population = next_population
-    return encoded_population
+            best_solution = sorted_population_based_on_fitness[0]
+
+            if best_solution[2] >= value_threshold:
+                generate_animation()
+                print("A value above the threshold was found!")
+                return best_solution
+
+            descendants = do_crossover(
+                sorted_population_based_on_fitness,
+                crossover_rate,
+                number_of_bits,
+            )
+
+            next_population = do_mutation(descendants, number_of_bits, mutation_rate)
+
+            encoded_population = next_population
+
+    print(
+        "Could not reach the threshold value! Try other configurations! Here are the final fitness values: "
+    )
+    final_decoded_population = []
+    for i in range(len(encoded_population)):
+        final_decoded_population.append(
+            binary_decode(encoded_population[i], domain_min, domain_max, number_of_bits)
+        )
+    final_fitness = compute_fitness_for_population(decoded_population)
+    return sorted(final_fitness, reverse=True)
 
 
 def main():
@@ -263,6 +277,7 @@ def main():
         FUNCTION_DOMAIN["MIN"],
         FUNCTION_DOMAIN["MAX"],
         NUMBER_OF_BITS,
+        CROSSOVER_RATE,
         MUTATION_RATE,
         VALUE_THRESHOLD,
     )
