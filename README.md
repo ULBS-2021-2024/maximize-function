@@ -26,6 +26,108 @@ Through these genetic operations, the algorithm introduces variations and explor
 		<video controls src="out/FunctionAnimation.mp4" title="Title"></video>
 	</details>
 
+
+## Project structure
+
+For managing the python packages I used a virtual environment which is added to .gitignore.
+
+The entry point of the application is the main function in the "main.py" file.
+Here we run the genetic algorithm loop which is based on the configurations declared in the "constants.py" file
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+def main():
+    result = run_genetic_algorithm(
+        INITIAL_POPULATION_SIZE,
+        NUMBER_OF_GENERATIONS,
+        FUNCTION_DOMAIN["MIN"],
+        FUNCTION_DOMAIN["MAX"],
+        NUMBER_OF_BITS,
+        MUTATION_RATE,
+        VALUE_THRESHOLD,
+    )
+    print(result)
+
+
+main()
+```
+</details>
+
+The "manim_utils.py" file is used to take the data by generation and send it to the animation class when the solution is found.
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+from constants import *
+from animations.generations import *
+
+data = []
+
+
+def add_generation_data(decoded_values, fitness_values, generation):
+    data.append(tuple((decoded_values, fitness_values, generation)))
+
+
+def generate_animation():
+    play_animation(data)
+```
+</details>
+
+The animation class is found in the "generations.py" file inside the animations folder. Here the data is processed and then placed inside a table which is rendered.
+
+<details>
+<summary>Code Snippet</summary>
+
+```python
+from manim import *
+import numpy as np
+from statistics import mean
+from constants import *
+
+
+class GenerationsAnimation(Scene):
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+
+    def construct(self):
+        rows = []
+        row_labels = []
+        print(self.data)
+        for i in range(len(self.data)):
+            generation_data = self.data[i]
+            generation_fitness_sum = sum(generation_data[1])
+            generation_fitness_average = mean(generation_data[1])
+            generation_maximum_x = generation_data[0][0]
+            generation_maximum_y = generation_data[1][0]
+            rows.append(
+                [
+                    str(generation_fitness_sum),
+                    str(generation_fitness_average),
+                    str(generation_maximum_y),
+                ]
+            )
+            row_labels.append(i)
+
+        table = Table(
+            rows,
+            col_labels=[Text("Sum"), Text("Average"), Text("Maximum")],
+        )
+        table.set_width(config.frame_width / 3)
+        table.set_height(config.frame_height / 3)
+        self.play(Write(table))
+        self.wait(2)
+
+
+def play_animation(data):
+    animation = GenerationsAnimation(data)
+    animation.render()
+```
+</details>
+
 ## Algorithm
 
 The algorithm is implemented in 10 steps:
