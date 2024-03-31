@@ -2,6 +2,7 @@ import random
 from constants import *
 from statistics import mean
 from manim_utils import *
+from user_interface import *
 
 
 def do_mutation(descendants, number_of_bits, mutation_rate):
@@ -244,8 +245,8 @@ def run_genetic_algorithm(
             best_solution = sorted_population_based_on_fitness[0]
 
             if best_solution[2] >= value_threshold:
-                generate_animation()
                 print("A value above the threshold was found!")
+                generate_animation()
                 return best_solution
 
             descendants = do_crossover(
@@ -285,4 +286,4 @@ def main():
     print(result)
 
 
-main()
+# main()

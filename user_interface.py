@@ -1,3 +1,4 @@
+from main import *
 import tkinter as tk
 from customtkinter import (
     CTk,
@@ -17,7 +18,7 @@ class App(CTk):
         super().__init__(*args, **kwargs)
 
         self.title("Configuration")
-        self.geometry("500x500")
+        self.geometry("800x800")
 
         self.title_label = CTkLabel(
             self, text="Configuration", font=("Helvetica", 16, "bold")
@@ -99,6 +100,20 @@ class App(CTk):
             self.crossover_rate_slider.get(),
             self.mutation_rate_slider.get(),
         ]
+
+        result = run_genetic_algorithm(
+            int(text_input_values[0]),
+            int(text_input_values[1]),
+            slider_values[0],
+            slider_values[1],
+            int(text_input_values[2]),
+            slider_values[2],
+            slider_values[3],
+            float(text_input_values[3]),
+        )
+
+        self.result_label = CTkLabel(self, text=result, font=("Helvetica", 16, "bold"))
+        self.result_label.grid(row=6, column=0, columnspan=4, pady=(10, 20))
 
 
 if __name__ == "__main__":
