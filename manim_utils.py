@@ -5,7 +5,6 @@ data = []
 
 
 def add_generation_data(decoded_values, fitness_values, generation):
-    # print(generation)
     data.append(tuple((decoded_values, fitness_values, generation)))
 
 

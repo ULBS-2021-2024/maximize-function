@@ -217,8 +217,6 @@ def run_genetic_algorithm(
         fitness_values_for_animation = []
 
         for i in range(len(sorted_population_based_on_fitness)):
-            # print(sorted_population_based_on_fitness[i][2])
-            # print(sorted_population_based_on_fitness[i][1])
             decoded_values_for_animation.append(
                 sorted_population_based_on_fitness[i][1]
             )
@@ -233,25 +231,22 @@ def run_genetic_algorithm(
         )
 
         best_solution = sorted_population_based_on_fitness[0]
-        # print(best_solution[2])
+
         if best_solution[2] >= value_threshold:
             previous_best_solution = best_solution[2]
             generate_animation()
             print("A value above the threshold was found!")
             return best_solution
 
-        # print(sorted_population_based_on_fitness)
-        # crossover
         descendants = do_crossover(
             sorted_population_based_on_fitness,
             number_of_bits,
         )
-        # print(descendants)
+
         next_population = do_mutation(
             descendants, domain_min, domain_max, number_of_bits, mutation_rate
         )
 
-        # print(next_population)
         encoded_population = next_population
     return encoded_population
 
