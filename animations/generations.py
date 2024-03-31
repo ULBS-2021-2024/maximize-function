@@ -39,10 +39,8 @@ class GenerationsAnimation(Scene):
             ],
             include_outer_lines=True,
         ).set_column_colors(RED, GREEN, PURPLE, BLUE)
-
-        table.set_width(config.frame_width / 3)
-        table.set_height(config.frame_height / 3)
-        self.play(Write(Tex("Fitness Statistics by Generation")))
+        table = table.scale(0.5)
+        self.play(Write(Tex("Fitness Statistics by Generation").to_edge(edge=UP)))
         self.play(Write(table))
         self.wait(2)
 

@@ -382,20 +382,60 @@ def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_ra
 1. 
 
 ```python
-INITIAL_POPULATION_SIZE = 8
-NUMBER_OF_GENERATIONS = 50
-FUNCTION_DOMAIN = {"MIN": -198, "MAX": 201}
+INITIAL_POPULATION_SIZE = 5
+NUMBER_OF_GENERATIONS = 10
+FUNCTION_DOMAIN = {"MIN": -200, "MAX": 201}
 NUMBER_OF_BITS = 5
+CROSSOVER_RATE = 0.7
 MUTATION_RATE = 0.01
 VALUE_THRESHOLD = 6424080201
+
 ```
 
 <details>
  <summary>Result</summary>
-	<video controls src="tests/Test1.mp4" title="Title"></video>
+	<video controls src="tests/test1.mp4" title="Title"></video>
 </details>
 
 
+2. 
+
+```python
+INITIAL_POPULATION_SIZE = 4
+NUMBER_OF_GENERATIONS = 10
+FUNCTION_DOMAIN = {"MIN": -10, "MAX": 11}
+NUMBER_OF_BITS = 5
+CROSSOVER_RATE = 0.7
+MUTATION_RATE = 0.01
+VALUE_THRESHOLD = 35000
+
+```
+
+<details>
+ <summary>Result</summary>
+	<video controls src="tests/test2.mp4" title="Title"></video>
+</details>
+
+
+3. 
+
+```python
+INITIAL_POPULATION_SIZE = 4
+NUMBER_OF_GENERATIONS = 10
+FUNCTION_DOMAIN = {"MIN": -10, "MAX": 11}
+NUMBER_OF_BITS = 5
+CROSSOVER_RATE = 0.7
+MUTATION_RATE = 0.01
+VALUE_THRESHOLD = 35000
+```
+
+<details>
+ <summary>Result</summary>
+	Could not reach the threshold value! Try other configurations! Here are the final fitness values: 
+	[1511.075770881226]
+</details>
+
 # Bibliography
+
 
 [Introduction to Genetic Algorithms by S.N. Sivanandam, S.N. Deepa](<doc/Introduction to Genetic Algorithms, Springer.pdf>)

@@ -244,7 +244,7 @@ def run_genetic_algorithm(
             best_solution = sorted_population_based_on_fitness[0]
 
             if best_solution[2] >= value_threshold:
-                # generate_animation()
+                generate_animation()
                 print("A value above the threshold was found!")
                 return best_solution
 
@@ -258,6 +258,9 @@ def run_genetic_algorithm(
 
             encoded_population = next_population
 
+    print(
+        "Could not reach the threshold value! Try other configurations! Here are the final fitness values: "
+    )
     final_decoded_population = []
     for i in range(len(encoded_population)):
         final_decoded_population.append(
