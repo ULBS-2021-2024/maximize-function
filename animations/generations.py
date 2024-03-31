@@ -21,6 +21,7 @@ class GenerationsAnimation(Scene):
             generation_maximum_y = generation_data[1][0]
             rows.append(
                 [
+                    str(i + 1),
                     str(generation_fitness_sum),
                     str(generation_fitness_average),
                     str(generation_maximum_y),
@@ -30,10 +31,18 @@ class GenerationsAnimation(Scene):
 
         table = Table(
             rows,
-            col_labels=[Text("Sum"), Text("Average"), Text("Maximum")],
-        )
+            col_labels=[
+                Text("Generation"),
+                Text("Sum"),
+                Text("Average"),
+                Text("Maximum"),
+            ],
+            include_outer_lines=True,
+        ).set_column_colors(RED, GREEN, PURPLE, BLUE)
+
         table.set_width(config.frame_width / 3)
         table.set_height(config.frame_height / 3)
+        self.play(Write(Tex("Fitness Statistics by Generation")))
         self.play(Write(table))
         self.wait(2)
 
