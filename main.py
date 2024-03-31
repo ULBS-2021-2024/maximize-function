@@ -2,6 +2,7 @@ import random
 from constants import *
 from statistics import mean
 from manim_utils import *
+from user_interface import *
 
 
 def do_mutation(descendants, number_of_bits, mutation_rate):
@@ -191,6 +192,12 @@ def run_genetic_algorithm(
     )
 
     for generation in range(generations):
+        print("Generation: ", end=" ", file=open("logs/logs.txt", "a"))
+        print(generation + 1, file=open("logs/logs.txt", "a"))
+
+        print("Encoded population: ", end=" ", file=open("logs/logs.txt", "a"))
+        print(encoded_population, file=open("logs/logs.txt", "a"))
+
         if len(encoded_population) > 1:
             decoded_population = []
             for i in range(len(encoded_population)):
@@ -199,6 +206,8 @@ def run_genetic_algorithm(
                         encoded_population[i], domain_min, domain_max, number_of_bits
                     )
                 )
+            print("Decoded population: ", end=" ", file=open("logs/logs.txt", "a"))
+            print(decoded_population, file=open("logs/logs.txt", "a"))
 
             fitness = compute_fitness_for_population(decoded_population)
 
@@ -224,6 +233,13 @@ def run_genetic_algorithm(
                 actual_count,
             )
 
+            print(
+                "Sorted population based on fitness: ",
+                end=" ",
+                file=open("logs/logs.txt", "a"),
+            )
+            print(sorted_population_based_on_fitness, file=open("logs/logs.txt", "a"))
+
             decoded_values_for_animation = []
             fitness_values_for_animation = []
 
@@ -244,8 +260,15 @@ def run_genetic_algorithm(
             best_solution = sorted_population_based_on_fitness[0]
 
             if best_solution[2] >= value_threshold:
+                print(
+                    "A value above the threshold was found!",
+                    file=open("logs/logs.txt", "a"),
+                )
                 generate_animation()
-                print("A value above the threshold was found!")
+                print(
+                    "Animation successfully generated!",
+                    file=open("logs/logs.txt", "a"),
+                )
                 return best_solution
 
             descendants = do_crossover(
@@ -257,9 +280,11 @@ def run_genetic_algorithm(
             next_population = do_mutation(descendants, number_of_bits, mutation_rate)
 
             encoded_population = next_population
+            print("\n")
 
     print(
-        "Could not reach the threshold value! Try other configurations! Here are the final fitness values: "
+        "Could not reach the threshold value! Try other configurations! Here are the final fitness values: ",
+        file=open("logs/logs.txt", "a"),
     )
     final_decoded_population = []
     for i in range(len(encoded_population)):
@@ -281,7 +306,8 @@ def main():
         MUTATION_RATE,
         VALUE_THRESHOLD,
     )
+
     print(result)
 
 
-main()
+# main()
