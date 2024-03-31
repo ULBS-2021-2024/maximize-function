@@ -281,6 +281,8 @@ def run_genetic_algorithm(
 
             encoded_population = next_population
             print("\n")
+        else:
+            break
 
     print(
         "Could not reach the threshold value! Try other configurations! Here are the final fitness values: ",
