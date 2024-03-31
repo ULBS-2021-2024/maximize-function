@@ -16,6 +16,8 @@ Through these genetic operations, the algorithm introduces variations and explor
 ## Technologies used
 
 * Python: Python was chosen as the primary programming language for this project due to its ease of use, extensive libraries, and fast development workflow. Python's simplicity and readability make it an ideal choice for implementing complex algorithms like genetic algorithms. Additionally, the vast ecosystem of libraries in Python provides powerful tools for numerical computation, data visualization, and algorithmic optimization, facilitating efficient implementation and experimentation.
+  
+* Tkinter & Custom Tkinter: For the user interface, I used Tkinter (no so much) and Custom Thinker. While Tkinter provides a solid foundation for creating graphical user interfaces in Python, customizing its appearance and behavior to align with specific project requirements can be time-consuming and labor-intensive. By leveraging custom Tkinter themes and components, I was able to streamline the development process and achieve a visually appealing interface that enhances user engagement.
 
 * Manim: Manim (Mathematical Animation Engine) is a powerful Python library for creating animations, particularly suited for mathematical and scientific visualization. The decision to incorporate Manim into the project was driven by the desire to visualize the genetic algorithm's operations and results in a clear and engaging manner. By leveraging Manim's capabilities, the project aims to provide visual insights into how the genetic algorithm progresses through generations, how candidate solutions evolve, and how the fitness landscape changes over time.
 
