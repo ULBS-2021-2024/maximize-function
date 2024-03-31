@@ -4,7 +4,7 @@ from statistics import mean
 from manim_utils import *
 
 
-def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_rate):
+def do_mutation(descendants, number_of_bits, mutation_rate):
     mutated_descendants = []
 
     for i in range(len(descendants)):
@@ -51,7 +51,7 @@ def do_crossover(
 
     i = 0
     j = 1
-    # print(population_copy)
+
     while j < len(sorted_population):
         first_descendant, second_descendant = create_offspring(
             population_copy,
@@ -65,8 +65,8 @@ def do_crossover(
         first_parent = list(population_copy[i])
         second_parent = list(population_copy[j])
 
-        first_parent[4] = first_parent[4] - 1  # decrease actual count
-        second_parent[4] = second_parent[4] - 1  # decrease actual count
+        first_parent[4] = first_parent[4] - 1
+        second_parent[4] = second_parent[4] - 1
 
         population_copy[i] = tuple(first_parent)
         population_copy[j] = tuple(second_parent)
@@ -107,9 +107,9 @@ def filter_based_on_actual_count(
             i = i + 1
 
 
-def compute_actual_count(probability):
+def compute_actual_count(probability, population_size):
     actual_count = [0] * len(probability)
-    number_of_spins = INITIAL_POPULATION_SIZE * 2
+    number_of_spins = population_size * 2
 
     for _ in range(number_of_spins):
         spin_result = random.random()
@@ -183,10 +183,7 @@ def run_genetic_algorithm(
         number_of_bits,
     )
 
-    previous_best_solution = 0
-
     for generation in range(generations):
-        # print(encoded_population)
         decoded_population = []
         for i in range(len(encoded_population)):
             decoded_population.append(
@@ -195,15 +192,13 @@ def run_genetic_algorithm(
                 )
             )
 
-        # print(decoded_population)
         fitness = compute_fitness_for_population(decoded_population)
-        # print(fitness)
+
         probability = compute_probability_of_selection(fitness)
-        # print(probability)
-        # expected_count = compute_expected_count(fitness)
-        # print(expected_count)
-        actual_count = compute_actual_count(probability)
-        # print(actual_count)
+
+        expected_count = compute_expected_count(fitness)
+
+        actual_count = compute_actual_count(probability, len(encoded_population))
 
         filter_based_on_actual_count(
             encoded_population, decoded_population, fitness, probability, actual_count
@@ -233,7 +228,6 @@ def run_genetic_algorithm(
         best_solution = sorted_population_based_on_fitness[0]
 
         if best_solution[2] >= value_threshold:
-            previous_best_solution = best_solution[2]
             generate_animation()
             print("A value above the threshold was found!")
             return best_solution
