@@ -191,63 +191,72 @@ def run_genetic_algorithm(
     )
 
     for generation in range(generations):
-        decoded_population = []
-        for i in range(len(encoded_population)):
-            decoded_population.append(
-                binary_decode(
-                    encoded_population[i], domain_min, domain_max, number_of_bits
+        if len(encoded_population) > 1:
+            decoded_population = []
+            for i in range(len(encoded_population)):
+                decoded_population.append(
+                    binary_decode(
+                        encoded_population[i], domain_min, domain_max, number_of_bits
+                    )
                 )
+
+            fitness = compute_fitness_for_population(decoded_population)
+
+            probability = compute_probability_of_selection(fitness)
+
+            expected_count = compute_expected_count(fitness)
+
+            actual_count = compute_actual_count(probability, len(encoded_population))
+
+            filter_based_on_actual_count(
+                encoded_population,
+                decoded_population,
+                fitness,
+                probability,
+                actual_count,
             )
 
-        fitness = compute_fitness_for_population(decoded_population)
-
-        probability = compute_probability_of_selection(fitness)
-
-        expected_count = compute_expected_count(fitness)
-
-        actual_count = compute_actual_count(probability, len(encoded_population))
-
-        filter_based_on_actual_count(
-            encoded_population, decoded_population, fitness, probability, actual_count
-        )
-
-        sorted_population_based_on_fitness = sort_population(
-            encoded_population, decoded_population, fitness, probability, actual_count
-        )
-
-        decoded_values_for_animation = []
-        fitness_values_for_animation = []
-
-        for i in range(len(sorted_population_based_on_fitness)):
-            decoded_values_for_animation.append(
-                sorted_population_based_on_fitness[i][1]
-            )
-            fitness_values_for_animation.append(
-                sorted_population_based_on_fitness[i][2]
+            sorted_population_based_on_fitness = sort_population(
+                encoded_population,
+                decoded_population,
+                fitness,
+                probability,
+                actual_count,
             )
 
-        add_generation_data(
-            decoded_values_for_animation,
-            fitness_values_for_animation,
-            generation + 1,
-        )
+            decoded_values_for_animation = []
+            fitness_values_for_animation = []
 
-        best_solution = sorted_population_based_on_fitness[0]
+            for i in range(len(sorted_population_based_on_fitness)):
+                decoded_values_for_animation.append(
+                    sorted_population_based_on_fitness[i][1]
+                )
+                fitness_values_for_animation.append(
+                    sorted_population_based_on_fitness[i][2]
+                )
 
-        if best_solution[2] >= value_threshold:
-            generate_animation()
-            print("A value above the threshold was found!")
-            return best_solution
+            add_generation_data(
+                decoded_values_for_animation,
+                fitness_values_for_animation,
+                generation + 1,
+            )
 
-        descendants = do_crossover(
-            sorted_population_based_on_fitness,
-            crossover_rate,
-            number_of_bits,
-        )
+            best_solution = sorted_population_based_on_fitness[0]
 
-        next_population = do_mutation(descendants, number_of_bits, mutation_rate)
+            if best_solution[2] >= value_threshold:
+                # generate_animation()
+                print("A value above the threshold was found!")
+                return best_solution
 
-        encoded_population = next_population
+            descendants = do_crossover(
+                sorted_population_based_on_fitness,
+                crossover_rate,
+                number_of_bits,
+            )
+
+            next_population = do_mutation(descendants, number_of_bits, mutation_rate)
+
+            encoded_population = next_population
 
     final_decoded_population = []
     for i in range(len(encoded_population)):
