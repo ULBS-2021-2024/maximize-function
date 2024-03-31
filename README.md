@@ -347,7 +347,7 @@ def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_ra
 
 ```
 
-<details>
+</details>
 
 9.   The mutated descendants become the new population and the cycle is repeated until the maximum fitness is larger than a specific threshold. If that doesn't happen, the final result will be the last generation.
 
@@ -375,7 +375,7 @@ def do_mutation(descendants, domain_min, domain_max, number_of_bits, mutation_ra
 
 ```
 
-<details>
+</details>
 
 ## Tests
 
