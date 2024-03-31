@@ -44,6 +44,7 @@ def create_offspring(
 
 def do_crossover(
     sorted_population,
+    crossover_rate,
     number_of_bits,
 ):
     population_copy = sorted_population
@@ -53,15 +54,6 @@ def do_crossover(
     j = 1
 
     while j < len(sorted_population):
-        first_descendant, second_descendant = create_offspring(
-            population_copy,
-            i,
-            j,
-            number_of_bits,
-        )
-        descendants.append(first_descendant)
-        descendants.append(second_descendant)
-
         first_parent = list(population_copy[i])
         second_parent = list(population_copy[j])
 
@@ -70,6 +62,19 @@ def do_crossover(
 
         population_copy[i] = tuple(first_parent)
         population_copy[j] = tuple(second_parent)
+
+        if random.random() < crossover_rate:
+            first_descendant, second_descendant = create_offspring(
+                population_copy,
+                i,
+                j,
+                number_of_bits,
+            )
+            descendants.append(first_descendant)
+            descendants.append(second_descendant)
+        else:
+            descendants.append(population_copy[i][0])
+            descendants.append(population_copy[j][0])
 
         if population_copy[i][4] == 0:
             if population_copy[j][4] == 0:
@@ -81,6 +86,7 @@ def do_crossover(
         else:
             if population_copy[j][4] == 0:
                 j = j + 1
+
     return descendants
 
 
@@ -173,6 +179,7 @@ def run_genetic_algorithm(
     domain_min,
     domain_max,
     number_of_bits,
+    crossover_rate,
     mutation_rate,
     value_threshold,
 ):
@@ -234,15 +241,21 @@ def run_genetic_algorithm(
 
         descendants = do_crossover(
             sorted_population_based_on_fitness,
+            crossover_rate,
             number_of_bits,
         )
 
-        next_population = do_mutation(
-            descendants, domain_min, domain_max, number_of_bits, mutation_rate
-        )
+        next_population = do_mutation(descendants, number_of_bits, mutation_rate)
 
         encoded_population = next_population
-    return encoded_population
+
+    final_decoded_population = []
+    for i in range(len(encoded_population)):
+        final_decoded_population.append(
+            binary_decode(encoded_population[i], domain_min, domain_max, number_of_bits)
+        )
+    final_fitness = compute_fitness_for_population(decoded_population)
+    return sorted(final_fitness, reverse=True)
 
 
 def main():
@@ -252,6 +265,7 @@ def main():
         FUNCTION_DOMAIN["MIN"],
         FUNCTION_DOMAIN["MAX"],
         NUMBER_OF_BITS,
+        CROSSOVER_RATE,
         MUTATION_RATE,
         VALUE_THRESHOLD,
     )
